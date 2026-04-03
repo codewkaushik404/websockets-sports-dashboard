@@ -5,15 +5,16 @@ import zod from "zod";
 export async function getMatches(req, res){
     try{
         let no_of_matches = Number(req.query.limit);
-        if(isNaN(no_of_matches) || no_of_matches > 50) no_of_matches = 50;
+        if(isNaN(no_of_matches) || no_of_matches <= 0 || no_of_matches > 50) no_of_matches = 50;
 
         const matches = await Matches.find().limit(no_of_matches);
-        if(matches){
+        if(matches.length > 0){
             return res.json({message: "Matches successfully fetched", data: matches});
         }
         return res.status(404).json({message: "No matches found"});
     }catch(err){
-        throw new Error(err);
+        console.error("Error fetching matches:", err);
+        return res.status(500).json({message: "Internal server error"});
     }
 }
 
@@ -34,6 +35,7 @@ export async function createMatch(req, res){
             console.error(error);
             return res.status(400).json({message: "Invalid data", error });
         }
-        throw new Error(err);
+        console.error("Error fetching matches:", err);
+        return res.status(500).json({message: "Internal server error"});
     }
 }

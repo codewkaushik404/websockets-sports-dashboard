@@ -9,6 +9,6 @@ export default async function connectDB(){
         console.log("Connected to DB:", connect.connection.name);
 
     }catch(err){
-        throw new Error("Error while connecting to database :", err.message);
+        throw new Error(`Error while connecting to database : ${err.message}`);
     }
 }

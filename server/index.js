@@ -13,6 +13,11 @@ app.get("/", (req, res)=> res.send("Hello World"));
 app.use("/matches", matchRoutes);
 
 (async function(){
-    await connectDB();
-    app.listen(PORT, ()=> console.log("Server is running on Port: ",PORT));
+    try{
+        await connectDB();
+        app.listen(PORT, ()=> console.log("Server is running on Port: ",PORT));
+    }catch(err){
+        console.error("Failed to start server:", err.message);
+        process.exit(1);
+    }
 })();

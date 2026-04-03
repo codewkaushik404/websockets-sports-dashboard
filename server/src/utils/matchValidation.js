@@ -7,8 +7,8 @@ const time = zod.preprocess((arg) => {
     }
     else if(arg instanceof Date) return arg;
     return undefined;
-    
-}, zod.date({message: "Incorrect dates received"}));
+
+}, zod.date({error: "Incorrect dates received"}));
 
 export const createMatchValidation = zod.object({
     sport: zod.string().min(5, "Sport must be of 5 characters at least"),
