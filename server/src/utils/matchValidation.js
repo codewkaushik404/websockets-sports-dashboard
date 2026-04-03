@@ -11,7 +11,7 @@ const time = zod.preprocess((arg) => {
 }, zod.date({error: "Incorrect dates received"}));
 
 export const createMatchValidation = zod.object({
-    sport: zod.string().min(5, "Sport must be of 5 characters at least"),
+    sport: zod.string().trim().min(1, "Sport is required"),
     homeTeam: zod.string().min(1, "Team Name must be of 1 character at least"),
     awayTeam: zod.string().min(1, "Team Name must be of 1 character at least"),
     startTime: time, 
