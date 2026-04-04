@@ -5,6 +5,7 @@ import connectDB from "./src/config/db.js";
 import matchRoutes from "./src/routes/matches.routes.js";
 import errorHandler from "./src/middleware/errorHandler.js";
 import { createWebSocketServer } from "./src/ws/server.js";
+import securityMiddleware from "./src/middleware/security.js";
 
 import http from "http";
 
@@ -16,6 +17,10 @@ const server = http.createServer(app);
 app.use(express.json());
 
 app.get("/", (req, res)=> res.send("Hello World"));
+
+//SECURITY MIDDLEWARE
+app.use(securityMiddleware);
+
 app.use("/matches", matchRoutes);
 
 const { broadcastMatchCreated } = createWebSocketServer(server);
