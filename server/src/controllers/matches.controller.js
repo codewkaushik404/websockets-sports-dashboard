@@ -1,6 +1,5 @@
 import Matches from "../models/matchSchema.js";
 import {createMatchValidation} from "../utils/matchValidation.js"
-import zod from "zod";
 
 export async function getMatches(req, res){
     let no_of_matches = Number(req.query.limit);
@@ -19,9 +18,8 @@ export async function createMatch(req, res){
     const match = await Matches.create(validation);
     const {_id, createdAt, updatedAt, __v, ...data} = match.toJSON();
 
-    if(app.locals.broadcastMatchCreated){
-        broadcastMatchCreated(data);
+    if(res.app.locals.broadcastMatchCreated){
+        res.app.locals.broadcastMatchCreated(data);
     }
     return res.json({message: "New match created successfully"});
-
 }

@@ -24,7 +24,6 @@ export function createWebSocketServer(server){
     })
 
     function broadcastMatchCreated(match){
-       
         broadcast(wss, {type: "match_created", payload: {data: match}})
     }
 
