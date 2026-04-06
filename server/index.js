@@ -2,7 +2,8 @@ import express from "express";
 import {config} from "dotenv";
 config({quiet: true});
 import connectDB from "./src/config/db.js"; 
-import matchRoutes from "./src/routes/matches.routes.js";
+import matchRouter from "./src/routes/matches.routes.js";
+import commentaryRouter from "./src/routes/commentary.routes.js";
 import errorHandler from "./src/middleware/errorHandler.js";
 import { createWebSocketServer } from "./src/ws/server.js";
 import securityMiddleware from "./src/middleware/security.js";
@@ -21,7 +22,8 @@ app.get("/", (req, res)=> res.send("Hello World"));
 //SECURITY MIDDLEWARE
 app.use(securityMiddleware);
 
-app.use("/matches", matchRoutes);
+app.use("/matches", matchRouter);
+app.use("/matches/:id/commentary", commentaryRouter);
 
 const { broadcastMatchCreated } = createWebSocketServer(server);
 app.locals.broadcastMatchCreated = broadcastMatchCreated;

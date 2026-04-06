@@ -1,7 +1,7 @@
 import { ZodError } from "zod";
 
 export default function errorHandler(err, req, res, next){
-    console.error(err);
+    //console.error(err);
     if(err instanceof ZodError){
         const error = err.issues.map(issue => ({
                 message: issue.message,
