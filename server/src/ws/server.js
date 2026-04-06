@@ -1,5 +1,5 @@
 import { WebSocketServer, WebSocket } from "ws";
-import { wsArcjet } from "../../arcjet";
+import { wsArcjet } from "../../arcjet.js";
 
 function sendJson(socket, payload){
     if(socket.readyState !== WebSocket.OPEN) return ;
@@ -14,25 +14,47 @@ function broadcast(wss, payload){
 
 export function createWebSocketServer(server){
     //1MB - 1024*1024
-    const wss = new WebSocketServer({server, path: "/ws", maxPayload: 1024*1024 });
-    wss.on("connection", async function(socket, req){
+    const wss = new WebSocketServer({noServer: true, path: "/ws", maxPayload: 1024*1024 });
 
-        if(!wsArcjet){
-            socket.close(1011, "Internal Server Error");
-            return ;
-        }
-
-        const decision = await wsArcjet.protect(req);
-        if(decision.isDenied()){
-            //1013 - The server is temporarily unable to handle the request.
-            //1008 — Policy Violation Used for auth/permission errors
-            const object = decision.reason.isRateLimit() 
-                            ? {code: 1013, reason: "Too many requests"} 
-                            : {code: 1008, reason: "Forbidden"} ;
-            socket.close(object.code, object.reason);
-            return ;
-        }
+    //Here we are still in HTTP so thats why socket.write and .destroy() no ws connection has been made so far
+    server.on("upgrade", async (req, socket, head) => {
+        const {pathname} = new URL(req.url, `http://${req.headers.host}`);
         
+        if(pathname !== "/ws"){
+            socket.write("HTTP/1.1 404 Invalid path\r\n\r\n");
+            socket.destroy();
+            return ;
+        }
+
+        try{
+            if(!wsArcjet){
+                socket.write("HTTP/1.1 500 Internal Server Error\r\n\r\n");
+                socket.destroy();
+                return ;
+            }
+
+            const decision = await wsArcjet.protect(req);
+            if(decision.isDenied()){
+                //1013 - The server is temporarily unable to handle the request.
+                //1008 — Policy Violation Used for auth/permission errors
+                if(decision.reason.isRateLimit()) socket.write('HTTP/1.1 429 Too many requests \r\n\r\n');
+                else socket.write('HTTP/1.1 403 Forbidden \r\n\r\n');
+                socket.destroy();
+                return ;
+            }
+        }catch(err){
+            socket.write('HTTP/1.1 500 Internal Server Error\r\n\r\n');
+            socket.destroy();
+            return;
+        }
+
+        wss.handleUpgrade(req, socket, head, (ws)=>{
+            wss.emit("connection", ws, req);
+        })
+    })
+
+    wss.on("connection", async function(socket, req){
+    
         sendJson(socket, {type: "welcome", payload: {data: "Connection established" }});
         socket.isAlive = true;
     
