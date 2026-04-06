@@ -1,4 +1,4 @@
-import zod from "zod";
+import { z as zod } from "zod";
 
 const time = zod.preprocess((arg) => {
     if(typeof arg === "string"){
@@ -12,6 +12,7 @@ const time = zod.preprocess((arg) => {
 
 export const createMatchValidation = zod.object({
     sport: zod.string().trim().min(1, "Sport is required"),
+    venue: zod.string().min(1, "Venue should be of at least 1 character"),
     homeTeam: zod.string().min(1, "Team Name must be of 1 character at least"),
     awayTeam: zod.string().min(1, "Team Name must be of 1 character at least"),
     startTime: time, 

@@ -2,10 +2,10 @@ import Matches from "../models/matchSchema.js";
 import {createMatchValidation} from "../utils/matchValidation.js"
 
 export async function getMatches(req, res){
-    let no_of_matches = Number(req.query.limit);
+    let no_of_matches = parseInt(req.query.limit, 10);
     if(isNaN(no_of_matches) || no_of_matches <= 0 || no_of_matches > 50) no_of_matches = 50;
 
-    const matches = await Matches.find().limit(no_of_matches);
+    const matches = await Matches.find().select("-_id -createdAt -updatedAt, -__v").limit(no_of_matches);
     if(matches.length > 0){
         return res.json({message: "Matches successfully fetched", data: matches});
     }
