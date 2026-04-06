@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const matchSchema = new mongoose.Schema({
 
     sport: {type: String, required: true},
+    venue: {type: String, required: true},
     homeTeam: {type: String, required: true},
     awayTeam: {type: String, required: true},
     homeTeamScore: {type: Number, default: 0},
