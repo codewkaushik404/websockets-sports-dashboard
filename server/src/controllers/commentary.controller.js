@@ -22,5 +22,12 @@ export async function createCommentary(req, res) {
 
     const commentary = await Commentary.create({matchId, ...validData});
     const {_id, createdAt, updatedAt, __v, ...data } = commentary.toJSON();
-    return res.json({ message: "New commentary added successfully", data });
+
+    if(res.app.locals.broadcastCommentary){
+        try {
+            res.app.locals.broadcastCommentary(commentary.matchId, data);
+        } catch (err) {
+            console.error("Failed to broadcast commentary:", err);
+        }
+    }    return res.json({ message: "New commentary added successfully", data });
 }

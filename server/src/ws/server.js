@@ -1,16 +1,6 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { wsArcjet } from "../../arcjet.js";
-
-function sendJson(socket, payload){
-    if(socket.readyState !== WebSocket.OPEN) return ;
-    socket.send(JSON.stringify(payload));
-}
-
-function broadcast(wss, payload){
-    for(const client of wss.clients){
-        sendJson(client, payload);
-    }
-}
+import { sendJson, broadcastToAll, handleMessage, cleanUp, broadcastMatch } from "./helper.js";
 
 export function createWebSocketServer(server){
     //1MB - 1024*1024
@@ -57,16 +47,24 @@ export function createWebSocketServer(server){
     
         sendJson(socket, {type: "welcome", payload: {data: "Connection established" }});
         socket.isAlive = true;
+        socket.subscriptions = new Set();
     
-        socket.on("error", (err) => console.error(err));
+        socket.on("error", (err) => {
+            console.error(err)
+            socket.terminate();
+        });
 
         //this event handler will run after the connections is closed, 
         // so u cant send anything to client in this handler
         socket.on("close", (code, reason) => {
+            cleanUp(socket);
             console.log({ message: "User disconnected", payload: {code, reason} });
         });
 
         socket.on("pong", () => socket.isAlive = true);
+        socket.on("message", (data)=>{
+            handleMessage(socket, data);
+        })
     })
 
     let interval = setInterval(()=>{
@@ -81,8 +79,12 @@ export function createWebSocketServer(server){
     wss.on("close", ()=> clearInterval(interval));
 
     function broadcastMatchCreated(match){
-        broadcast(wss, {type: "match_created", payload: {data: match}})
+        broadcastToAll(wss, {type: "match_created", payload: {data: match}})
     }
 
-    return { broadcastMatchCreated };
+    function broadcastCommentary(matchId, commentary){
+        broadcastMatch(matchId, {type: "commentary", payload: {data: commentary }});
+    }
+
+    return { broadcastMatchCreated, broadcastCommentary };
 }

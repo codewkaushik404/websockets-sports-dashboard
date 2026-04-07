@@ -25,8 +25,9 @@ app.use(securityMiddleware);
 app.use("/matches", matchRouter);
 app.use("/matches/:id/commentary", commentaryRouter);
 
-const { broadcastMatchCreated } = createWebSocketServer(server);
+const { broadcastMatchCreated, broadcastCommentary } = createWebSocketServer(server);
 app.locals.broadcastMatchCreated = broadcastMatchCreated;
+app.locals.broadcastCommentary = broadcastCommentary;
 
 app.use(errorHandler);
 
